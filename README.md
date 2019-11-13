@@ -3,17 +3,17 @@ This repository contains all codes and data to run the occupancy models present 
 
 # Table of contents
 
-## Repeated-visits occupancy models
+## Repeated-visits (RV) occupancy models
 
-  #### Aerial surveys occupancy model
-  #### At-sea surveys occupancy model
-  #### Multi-method occupancy model 
+  #### Aerial surveys RV occupancy model
+  #### At-sea surveys RV occupancy model
+  #### Multi-method RV occupancy model 
   
-## Single-visit occupancy models
+## Single-visit (SV) occupancy models
 
-  #### Aerial surveys occupancy model
-  #### At-sea surveys occupancy model
-  #### Multi-method occupancy model
+  #### Aerial surveys SVoccupancy model
+  #### At-sea surveys SV occupancy model
+  #### Multi-method SV occupancy model
   
 ## Analyse and plot the outputs
 
