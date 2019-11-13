@@ -1,7 +1,7 @@
+
 ---
-title: "Combining single- and repeated-visit occupancy models to make the best of monitoring surveys: Appendix III"
-date: "`r Sys.Date()`"
-author: "Valentin Lauret, Hélène Labach, Matthieu Authier, Olivier Gimenez"
+title: "authors"
+Combining single- and repeated-visit occupancy models to make the best of monitoring surveys : "Valentin Lauret, Hélène Labach, Matthieu Authier, Olivier Gimenez"
 ---
 
 In this Appendix, we present how we built the multi-method single-visit (SV) occupancy models analysing the aerial surveys and the at-sea surveys with as single-visit occupancy models.
