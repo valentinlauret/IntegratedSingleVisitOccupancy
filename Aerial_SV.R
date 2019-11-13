@@ -72,9 +72,9 @@ nc <- 3
 
 out <- jags(win.data, params, "Aerial_SV.jags", inits = inits, n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, working.directory = getwd())
 
-Aerial_sv <- out
+Aerial_SV <- out
 
-save(Aerial_sv, file="RES_Aerial_sv.rdata")
+save(Aerial_SV, file="RES_Aerial_sv.rdata")
 
 #############################
 # Outputs
@@ -84,14 +84,14 @@ library(mcmcplots)
 
 load("RES_Aerial_sv.rdata")
 
-head(out$BUGSoutput$summary)
+head(Aerial_SV$BUGSoutput$summary)
 
 # see posterior distribution of parameters
 
-denplot(out, c("alpha.psi","beta.bathy", "beta.sst"))
+denplot(Aerial_SV, c("alpha.psi","beta.bathy", "beta.sst"))
 
 # see parameters values for saved iterations
 
-traplot(out,"beta.bathy")
-traplot(out,"beta.sst")
-traplot(out,"beta.eff")
+traplot(Aerial_SV,"beta.bathy")
+traplot(Aerial_SV,"beta.sst")
+traplot(Aerial_SV,"beta.eff")
