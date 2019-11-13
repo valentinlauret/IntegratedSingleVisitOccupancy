@@ -74,7 +74,7 @@ out <- jags(win.data, params, "Aerial_SV.jags", inits = inits, n.chains = nc, n.
 
 Aerial_SV <- out
 
-save(Aerial_SV, file="RES_Aerial_sv.rdata")
+save(Aerial_SV, file="RES_Aerial_SV.rdata")
 
 #############################
 # Outputs
@@ -82,7 +82,7 @@ save(Aerial_SV, file="RES_Aerial_sv.rdata")
 
 library(mcmcplots)
 
-load("RES_Aerial_sv.rdata")
+load("RES_Aerial_SV.rdata")
 
 head(Aerial_SV$BUGSoutput$summary)
 
