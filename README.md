@@ -11,7 +11,7 @@ This repository contains all codes and data to run the occupancy models present 
   
 ## Single-visit (SV) occupancy models
 
-  #### Aerial surveys SVoccupancy model
+  #### Aerial surveys SV occupancy model
   #### At-sea surveys SV occupancy model
   #### Multi-method SV occupancy model
   
