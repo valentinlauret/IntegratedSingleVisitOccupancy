@@ -1,4 +1,5 @@
-# SV_Occupancy
+# Lauret et al, R codes and data 
+
 This repository contains all codes and data to run the occupancy models present in Lauret et al. 
 
 # Table of contents
