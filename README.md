@@ -15,11 +15,6 @@ This repository contains all codes and data to run the occupancy models present 
   #### At-sea surveys SV occupancy model
   #### Multi-method SV occupancy model
   
-## Analyse and plot the outputs
-
-  #### Analyse of occupancy estimates
-  #### Plot of predicted occupancy on Mediterranean Sea maps
-  
 ## END OF THE DOCUMENT
   
 
