@@ -5,9 +5,8 @@ This repository contains all codes and data to run the occupancy models present 
 
 # Simulations study
 
-  - Simulation Repeated- vs. Single-visit occupancy
-
-  - Simulation Integrated occupancy models
+  - Simulation [Repeated- vs. Single-visit](/Simulations/SimRVSV.Rmd) occupancy
+  - Simulation [Integrated occupancy models](/Simulations/Sim_SuppMat_V3.Rmd)
 
 # Bottlenose dolphins: JAGS code and data  
 
