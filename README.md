@@ -1,27 +1,27 @@
-# Lauret et al, R codes and data 
+# Using single-visit into integrated occupancy models to make the best of existing monitoring programs:  
+# R codes and data
 
-This repository contains all codes and data to run the occupancy models present in Lauret et al. 
+This repository contains all codes and data to run the occupancy models present in our [manuscript](). 
 
-# Simulations
+# Simulations study
 
-## Simulation Repeated- vs. Single-visit occupancy
+  - Simulation Repeated- vs. Single-visit occupancy
 
-## Simulation Integrated occupancy models
+  - Simulation Integrated occupancy models
 
 # Bottlenose dolphins: JAGS code and data  
 
-## Repeated-visits (RV) occupancy models
+#### Repeated-visits (RV) occupancy models
 
-  #### Aerial surveys RV occupancy model
-  #### At-sea surveys RV occupancy model
-  #### Multi-method RV occupancy model 
+  - Aerial surveys RV occupancy model
+  - At-sea surveys RV occupancy model
+  - Integrated RV occupancy model 
   
-## Single-visit (SV) occupancy models
+#### Single-visit (SV) occupancy models
 
-  #### Aerial surveys SV occupancy model
-  #### At-sea surveys SV occupancy model
-  #### Multi-method SV occupancy model
+  - Aerial surveys SV occupancy model
+  - At-sea surveys SV occupancy model
+  - Integrated SV occupancy model
   
-## END OF THE DOCUMENT
   
 
