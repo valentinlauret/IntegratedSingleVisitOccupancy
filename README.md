@@ -2,7 +2,13 @@
 
 This repository contains all codes and data to run the occupancy models present in Lauret et al. 
 
-# Table of contents
+# Simulations
+
+## Simulation Repeated- vs. Single-visit occupancy
+
+## Simulation Integrated occupancy models
+
+# Bottlenose dolphins: JAGS code and data  
 
 ## Repeated-visits (RV) occupancy models
 
