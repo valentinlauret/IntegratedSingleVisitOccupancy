@@ -1,0 +1,262 @@
+---
+title: "Simulation study"
+author: "Valentin Lauret, Hélène Labach, Matthieu Authier, Olivier Gimenez"
+output:
+  html_document:
+    highlight: textmate
+    theme: readable
+    toc: yes
+  word_document:
+    toc: yes
+---
+
+Comparing single-visit and repeated-visits integrated occupancy models.
+
+# Methods
+
+Required packages 
+
+```{r message=FALSE, warning=FALSE, cache=TRUE}
+library(unmarked)
+library(tidyverse)
+library(cowplot)
+```
+
+## Data simulation 
+
+### State process
+
+The occupancy state `z` was drawn from a Bernoulli distribution with parameter ψ, `z <- dbern(\psi)`. We wrote ψ as a logistic function of an environmental covariate `cov`: 
+
+<center>
+$logit(\psi) = \alpha_{0} + \alpha_{1} cov$  
+</center>
+
+where $\alpha_{0}$ and $\alpha_{1}$ are unknown parameters that need to be estimated.  
+
+We considered two sets of values for the alpha’s:  
+	
+  - `alpha0 = -1.0` and `alpha1 = 0.2` that led to Ψ approx. equal to 0.1
+  - `alpha0 = -0.5` and `alpha1 = 0.2` that led to Ψ approx. equal to 0.3
+
+  
+ We used the `sim_state_cov()` function to simulate the `z` vector that contains the latent ecological state.
+ 
+ <center>
+```{r echo=FALSE, message=FALSE, warning=FALSE, cache = TRUE}
+nsites <- 400
+covenv <- runif(nsites,0,1)
+covparam.3 <- c(-0.5,0.2,0) # psi = 0.3
+cov_rel.3 <- as.numeric(covparam.3[1]+covparam.3[2]*scale(covenv)+covparam.3[3]*scale(covenv)*scale(covenv))
+
+covparam.1 <- c(-1.9,0.2,0) # psi = 0.1
+cov_rel.1 <- as.numeric(covparam.1[1]+covparam.1[2]*scale(covenv)+covparam.1[3]*scale(covenv)*scale(covenv))
+
+ ggplot() + geom_line(aes(x=covenv,y=1/(1+exp(-cov_rel.3)), color="High occupancy"), lwd= 2) +
+   geom_line(aes(x=covenv,y=1/(1+exp(-cov_rel.1)),color="Low occupancy"), lwd= 2) +
+   ylim(0,1) + ylab("Occupancy probability : Ψ") +xlab("Fictive covariate") + theme_bw(base_size = 14) + scale_color_viridis_d()
+```
+ </center>
+
+
+### Obseration process
+
+The observations are drawn either from a Bernoulli distribution with parameter `p` or a Multinomial distribution depending on two detection probability `p1` and `p2` for the integrated occupancy model. We wrote `p` as a logistic function of a sampling effort covariate `seff`:  
+
+<center>
+$logit(p) = \beta_{0} + \beta_{1} seff$  
+</center>
+
+where $\beta_{0}$ and $\beta_{1}$ are unknown parameters that need to be estimated.   
+
+We considered two sets of values for the beta’s:
+
+  - `beta0 = -0.1` and `beta1 = 0.16` that led to p approx. equal to 0.5
+  - `beta0 = 1.8` and `beta1 = 0.6` that led to p approx. equal to 0.8
+
+We used the `sim_obs_cov()` function to simulate the `y` vector that contains the detections/non-detections.
+
+
+ <center>
+```{r echo=FALSE, cache=TRUE}
+ nsites = 400
+Seff.5 <- data.frame(cbind(rnorm(nsites),rnorm(nsites),rnorm(nsites),rnorm(nsites),rnorm(nsites)))
+obsparam.5 <- c(-0.1,0.16,0)
+
+Seff.8 <- data.frame(cbind(rnorm(nsites),rnorm(nsites),rnorm(nsites),rnorm(nsites),rnorm(nsites),rnorm(nsites),rnorm(nsites),rnorm(nsites)))
+
+obsparam.8 <- c(1.8,0.6,0)
+
+obs_rel.5 <- as.numeric(obsparam.5[1]+obsparam.5[2]*Seff.5[,1]+obsparam.5[3]*Seff.5[,1]*Seff.5[,1])
+
+obs_rel.8 <- as.numeric(obsparam.8[1]+obsparam.8[2]*Seff.8[,1]+obsparam.8[3]*Seff.8[,1]*Seff.8[,1])
+
+ ggplot() + geom_line(aes(x=Seff.8[,1],y=1/(1+exp(-obs_rel.8)), color="High detection"), lwd= 2) +
+   geom_line(aes(x=Seff.5[,1],y=1/(1+exp(-obs_rel.5)),color="Low detection"), lwd= 2) +
+   ylim(0,1) + ylab("Detection probability : p") +xlab("Sampling effort covariate") + theme_minimal() + scale_color_viridis_d(begin = 0.2, end = 0.9)
+```
+ </center>
+
+We simulated 4 different sampling occasions for repeated-visit occupancy. For single-visit occupancy, we formatted the data as described in the Methods section. For the sampling effort at site `i`, we summed the sampling effort over the 4 sampling occasions at site `i`, with `seff_sv <- apply(seff_rv,1,sum)`. For the detection/non-detection matrix, we considered the site as occupied if the species was detected at least once over the 4 sampling occasions, with `y_sv <- apply(y_rv,1,max)`.
+
+### Study area 
+
+We simulated `z` and `y` for study areas of either 100, or 400 sites. 
+
+## Models
+
+We fitted 4 different occupancy models:  
+
+  - Repeated-visit (RV) single-method occupancy model (SOM) with low detection probability
+  - Single-visit (SV) single-method occupancy model (SOM) with low detection probability
+  - Repeated-visits integrated occupancy model (IOM RV), in which we combined two datasets into an integrated occupancy framework
+  - Single-visit integrated occupancy model (IOM SV)
+
+**Note that for the integrated occupancy, we combined datasets generated from the same `z` ecological states with two different detection probabilities, i.e. we combined one monitoring with 0.5 detection probability (i.e. 'low p'), and one monitoring with 0.8 detection probability (i.e. 'high p').**
+
+## Scenarios 
+
+We considered 4 ecological scenarios depending on either the size of the study area or the value of occupancy probability:  
+
+  - 100 sites with low occupancy;
+  - 100 sites with high occupancy;
+  - 400 sites with low occupancy;
+  - 400 sites high occupancy.  
+  
+For each scenario, we ran 100 simulations and fitted the 4 occupancy models.
+
+
+## Performances
+
+To compare the performances of the different occupancy models we calculated the relative bias (RB), and the root mean square error (RMSE) over the `S = 100` simulations :  
+
+  - Relative bias: $RB = \frac{1}{S} \sum_{1}^{S} \frac{(\widehat{\theta}_{s}-\theta)}{\theta}$  
+  
+  - Root Mean Square Error: $RMSE = \sqrt{ \frac{1}{S} \sum_{1}^{S} (\widehat{\theta}_{s}-\theta)^2}$
+
+# Results
+
+```{r,echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE}
+load("simul.rdata")
+#load("simulunmarked.rdata")
+
+# RMSE for occupancy covariate effect size
+r <- tibble(model = rep(unique(RMSEcov1$model),4),rmse = c(mean(RMSEcov1$RMSE[RMSEcov1$model=="RV low p"& RMSEcov1$occ=="ψ = 0.1"]),mean(RMSEcov1$RMSE[RMSEcov1$model=="SV low p"& RMSEcov1$occ=="ψ = 0.1"]),mean(RMSEcov1$RMSE[RMSEcov1$model=="IOM RV" & RMSEcov1$occ=="ψ = 0.1"]),mean(RMSEcov1$RMSE[RMSEcov1$model=="IOM SV"& RMSEcov1$occ=="ψ = 0.1"]),
+                                                           mean(RMSEcov1$RMSE[RMSEcov1$model=="RV low p"& RMSEcov1$occ=="ψ = 0.3"]),mean(RMSEcov1$RMSE[RMSEcov1$model=="SV low p"& RMSEcov1$occ=="ψ = 0.3"]),mean(RMSEcov1$RMSE[RMSEcov1$model=="IOM RV" & RMSEcov1$occ=="ψ = 0.3"]),mean(RMSEcov1$RMSE[RMSEcov1$model=="IOM SV"& RMSEcov1$occ=="ψ = 0.3"]),
+                                                           mean(RMSEcov4$RMSE[RMSEcov4$model=="RV low p"& RMSEcov4$occ=="ψ = 0.1"]),mean(RMSEcov4$RMSE[RMSEcov4$model=="SV low p"& RMSEcov4$occ=="ψ = 0.1"]),mean(RMSEcov4$RMSE[RMSEcov4$model=="IOM RV" & RMSEcov4$occ=="ψ = 0.1"]),mean(RMSEcov4$RMSE[RMSEcov4$model=="IOM SV"& RMSEcov4$occ=="ψ = 0.1"]),
+                                                           mean(RMSEcov4$RMSE[RMSEcov4$model=="RV low p"& RMSEcov4$occ=="ψ = 0.3"]),mean(RMSEcov4$RMSE[RMSEcov4$model=="SV low p"& RMSEcov4$occ=="ψ = 0.3"]),mean(RMSEcov4$RMSE[RMSEcov4$model=="IOM RV" & RMSEcov4$occ=="ψ = 0.3"]),mean(RMSEcov4$RMSE[RMSEcov4$model=="IOM SV"& RMSEcov4$occ=="ψ = 0.3"])))
+                                                           
+r <- r %>%   mutate(genre = rep(c("SOM","SOM","IOM","IOM"),4),
+        type = rep(c("RV","SV"),8),
+         occ = c(rep("Ψ = 0.1", 4),rep("Ψ = 0.3", 4),rep("Ψ = 0.1", 4),rep("Ψ = 0.3", 4)),
+         nsites = c(rep("100",8),rep("400",8)))
+
+poccRMSE <- r %>%
+  ggplot() +
+  aes(x = genre, y = rmse, fill = type) + 
+  geom_col(position = "dodge", width=.6) + 
+  labs(x = 'Model',
+       y = 'RMSE in occupancy covariate effect size') + 
+  scale_fill_manual(name = NULL, values=c("#840032","#d2a34e"))+ 
+  facet_wrap(~ occ + nsites,  strip.position = "top", labeller = label_wrap_gen(multi_line = FALSE)) + 
+  theme_bw(base_size = 14)
+
+nsim = 100
+
+
+
+# RMSE for sampling effort covariate effect size
+
+r <- tibble(model = rep(unique(RMSEseff1$model),4),rmse = c(mean(RMSEseff1$RMSE[RMSEseff1$model=="RV low p"& RMSEseff1$occ=="ψ = 0.1"]),mean(RMSEseff1$RMSE[RMSEseff1$model=="SV low p"& RMSEseff1$occ=="ψ = 0.1"]),mean(RMSEseff1$RMSE[RMSEseff1$model=="IOM RV low p" & RMSEseff1$occ=="ψ = 0.1"]),mean(RMSEseff1$RMSE[RMSEseff1$model=="IOM RV high p"& RMSEseff1$occ=="ψ = 0.1"]),mean(RMSEseff1$RMSE[RMSEseff1$model=="IOM SV low p"& RMSEseff1$occ=="ψ = 0.1"]),mean(RMSEseff1$RMSE[RMSEseff1$model=="IOM SV high p"& RMSEseff1$occ=="ψ = 0.1"]),
+                                                            mean(RMSEseff1$RMSE[RMSEseff1$model=="RV low p"& RMSEseff1$occ=="ψ = 0.3"]),mean(RMSEseff1$RMSE[RMSEseff1$model=="SV low p"& RMSEseff1$occ=="ψ = 0.3"]),mean(RMSEseff1$RMSE[RMSEseff1$model=="IOM RV low p" & RMSEseff1$occ=="ψ = 0.3"]),mean(RMSEseff1$RMSE[RMSEseff1$model=="IOM RV high p"& RMSEseff1$occ=="ψ = 0.3"]),mean(RMSEseff1$RMSE[RMSEseff1$model=="IOM SV low p"& RMSEseff1$occ=="ψ = 0.3"]),mean(RMSEseff1$RMSE[RMSEseff1$model=="IOM SV high p"& RMSEseff1$occ=="ψ = 0.3"]),
+                                                            mean(RMSEseff4$RMSE[RMSEseff4$model=="RV low p"& RMSEseff4$occ=="ψ = 0.1"]),mean(RMSEseff4$RMSE[RMSEseff4$model=="SV low p"& RMSEseff4$occ=="ψ = 0.1"]),mean(RMSEseff4$RMSE[RMSEseff4$model=="IOM RV low p" & RMSEseff4$occ=="ψ = 0.1"]),mean(RMSEseff4$RMSE[RMSEseff4$model=="IOM RV high p"& RMSEseff4$occ=="ψ = 0.1"]),mean(RMSEseff4$RMSE[RMSEseff4$model=="IOM SV low p"& RMSEseff4$occ=="ψ = 0.1"]),mean(RMSEseff4$RMSE[RMSEseff4$model=="IOM SV high p"& RMSEseff4$occ=="ψ = 0.1"]),
+                                                            mean(RMSEseff4$RMSE[RMSEseff4$model=="RV low p"& RMSEseff4$occ=="ψ = 0.3"]),mean(RMSEseff4$RMSE[RMSEseff4$model=="SV low p"& RMSEseff4$occ=="ψ = 0.3"]),mean(RMSEseff4$RMSE[RMSEseff4$model=="IOM RV low p" & RMSEseff4$occ=="ψ = 0.3"]),mean(RMSEseff4$RMSE[RMSEseff4$model=="IOM RV high p"& RMSEseff4$occ=="ψ = 0.3"]),mean(RMSEseff4$RMSE[RMSEseff4$model=="IOM SV low p"& RMSEseff4$occ=="ψ = 0.3"]),mean(RMSEseff4$RMSE[RMSEseff4$model=="IOM SV high p"& RMSEseff4$occ=="ψ = 0.3"])))
+
+r <- r %>%   mutate(genre = rep(c("SOM","SOM","IOM low p","IOM high p","IOM low p","IOM high p"),4),
+                    type = rep(c("RV","SV","RV","RV","SV","SV"),4),
+                    occ = c(rep("Ψ = 0.1", 6),rep("Ψ = 0.3", 6),rep("Ψ = 0.1", 6),rep("Ψ = 0.3", 6)),
+                    nsites = c(rep("100",12),rep("400",12)))
+
+pseffRMSE <- r %>%
+  ggplot() +
+  aes(x = genre, y = rmse, fill = type) + 
+  geom_col(position = "dodge", width=.6) + 
+  labs(x = 'Model',
+       y = 'RMSE in sampling effort effect size') + 
+  scale_fill_manual(name = NULL, values=c("#840032","#d2a34e"))+ 
+  facet_wrap(~ occ + nsites,  strip.position = "top", labeller = label_wrap_gen(multi_line = FALSE)) + 
+  theme_bw(base_size = 14)
+
+
+# RB for occupancy covariate effect size
+r <- tibble(model = rep(unique(RMSEcov1$model),4),rmse = c(mean(RMSEcov1$RB[RMSEcov1$model=="RV low p"& RMSEcov1$occ=="ψ = 0.1"]),mean(RMSEcov1$RB[RMSEcov1$model=="SV low p"& RMSEcov1$occ=="ψ = 0.1"]),mean(RMSEcov1$RB[RMSEcov1$model=="IOM RV" & RMSEcov1$occ=="ψ = 0.1"]),mean(RMSEcov1$RB[RMSEcov1$model=="IOM SV"& RMSEcov1$occ=="ψ = 0.1"]),
+                                                           mean(RMSEcov1$RB[RMSEcov1$model=="RV low p"& RMSEcov1$occ=="ψ = 0.3"]),mean(RMSEcov1$RB[RMSEcov1$model=="SV low p"& RMSEcov1$occ=="ψ = 0.3"]),mean(RMSEcov1$RB[RMSEcov1$model=="IOM RV" & RMSEcov1$occ=="ψ = 0.3"]),mean(RMSEcov1$RB[RMSEcov1$model=="IOM SV"& RMSEcov1$occ=="ψ = 0.3"]),
+                                                           mean(RMSEcov4$RB[RMSEcov4$model=="RV low p"& RMSEcov4$occ=="ψ = 0.1"]),mean(RMSEcov4$RB[RMSEcov4$model=="SV low p"& RMSEcov4$occ=="ψ = 0.1"]),mean(RMSEcov4$RB[RMSEcov4$model=="IOM RV" & RMSEcov4$occ=="ψ = 0.1"]),mean(RMSEcov4$RB[RMSEcov4$model=="IOM SV"& RMSEcov4$occ=="ψ = 0.1"]),
+                                                           mean(RMSEcov4$RB[RMSEcov4$model=="RV low p"& RMSEcov4$occ=="ψ = 0.3"]),mean(RMSEcov4$RB[RMSEcov4$model=="SV low p"& RMSEcov4$occ=="ψ = 0.3"]),mean(RMSEcov4$RB[RMSEcov4$model=="IOM RV" & RMSEcov4$occ=="ψ = 0.3"]),mean(RMSEcov4$RB[RMSEcov4$model=="IOM SV"& RMSEcov4$occ=="ψ = 0.3"])))
+
+r <- r %>%   mutate(genre = rep(c("SOM","SOM","IOM","IOM"),4),
+                    type = rep(c("RV","SV"),8),
+                    occ = c(rep("Ψ = 0.1", 4),rep("Ψ = 0.3", 4),rep("Ψ = 0.1", 4),rep("Ψ = 0.3", 4)),
+                    nsites = c(rep("100",8),rep("400",8)))
+
+poccRB <- r %>%
+  ggplot() +
+  aes(x = genre, y = rmse, fill = type) + 
+  geom_col(position = "dodge", width=.6) + 
+  labs(x = 'Model',
+       y = 'RB in occupancy covariate effect size') + 
+  scale_fill_manual(name = NULL, values=c("#840032","#d2a34e"))+ 
+  facet_wrap(~ occ + nsites,  strip.position = "top", labeller = label_wrap_gen(multi_line = FALSE)) + 
+  theme_bw(base_size = 14)
+
+nsim = 100
+
+
+
+# RB for sampling effort effect size
+
+r <- tibble(model = rep(unique(RMSEseff1$model),4),rmse = c(mean(RMSEseff1$RB[RMSEseff1$model=="RV low p"& RMSEseff1$occ=="ψ = 0.1"]),mean(RMSEseff1$RB[RMSEseff1$model=="SV low p"& RMSEseff1$occ=="ψ = 0.1"]),mean(RMSEseff1$RB[RMSEseff1$model=="IOM RV low p" & RMSEseff1$occ=="ψ = 0.1"]),mean(RMSEseff1$RB[RMSEseff1$model=="IOM RV high p"& RMSEseff1$occ=="ψ = 0.1"]),mean(RMSEseff1$RB[RMSEseff1$model=="IOM SV low p"& RMSEseff1$occ=="ψ = 0.1"]),mean(RMSEseff1$RB[RMSEseff1$model=="IOM SV high p"& RMSEseff1$occ=="ψ = 0.1"]),
+                                                            mean(RMSEseff1$RB[RMSEseff1$model=="RV low p"& RMSEseff1$occ=="ψ = 0.3"]),mean(RMSEseff1$RB[RMSEseff1$model=="SV low p"& RMSEseff1$occ=="ψ = 0.3"]),mean(RMSEseff1$RB[RMSEseff1$model=="IOM RV low p" & RMSEseff1$occ=="ψ = 0.3"]),mean(RMSEseff1$RB[RMSEseff1$model=="IOM RV high p"& RMSEseff1$occ=="ψ = 0.3"]),mean(RMSEseff1$RB[RMSEseff1$model=="IOM SV low p"& RMSEseff1$occ=="ψ = 0.3"]),mean(RMSEseff1$RB[RMSEseff1$model=="IOM SV high p"& RMSEseff1$occ=="ψ = 0.3"]),
+                                                            mean(RMSEseff4$RB[RMSEseff4$model=="RV low p"& RMSEseff4$occ=="ψ = 0.1"]),mean(RMSEseff4$RB[RMSEseff4$model=="SV low p"& RMSEseff4$occ=="ψ = 0.1"]),mean(RMSEseff4$RB[RMSEseff4$model=="IOM RV low p" & RMSEseff4$occ=="ψ = 0.1"]),mean(RMSEseff4$RB[RMSEseff4$model=="IOM RV high p"& RMSEseff4$occ=="ψ = 0.1"]),mean(RMSEseff4$RB[RMSEseff4$model=="IOM SV low p"& RMSEseff4$occ=="ψ = 0.1"]),mean(RMSEseff4$RB[RMSEseff4$model=="IOM SV high p"& RMSEseff4$occ=="ψ = 0.1"]),
+                                                            mean(RMSEseff4$RB[RMSEseff4$model=="RV low p"& RMSEseff4$occ=="ψ = 0.3"]),mean(RMSEseff4$RB[RMSEseff4$model=="SV low p"& RMSEseff4$occ=="ψ = 0.3"]),mean(RMSEseff4$RB[RMSEseff4$model=="IOM RV low p" & RMSEseff4$occ=="ψ = 0.3"]),mean(RMSEseff4$RB[RMSEseff4$model=="IOM RV high p"& RMSEseff4$occ=="ψ = 0.3"]),mean(RMSEseff4$RB[RMSEseff4$model=="IOM SV low p"& RMSEseff4$occ=="ψ = 0.3"]),mean(RMSEseff4$RB[RMSEseff4$model=="IOM SV high p"& RMSEseff4$occ=="ψ = 0.3"])))
+
+r <- r %>%   mutate(genre = rep(c("SOM","SOM","IOM low p","IOM high p","IOM low p","IOM high p"),4),
+                    type = rep(c("RV","SV","RV","RV","SV","SV"),4),
+                    occ = c(rep("Ψ = 0.1", 6),rep("Ψ = 0.3", 6),rep("Ψ = 0.1", 6),rep("Ψ = 0.3", 6)),
+                    nsites = c(rep("100",12),rep("400",12)))
+
+pseffRB <- r %>%
+  ggplot() +
+  aes(x = genre, y = rmse, fill = type) + 
+  geom_col(position = "dodge", width=.6) + 
+  labs(x = 'Model',
+       y = 'RMSE in sampling effort effect size') + 
+  scale_fill_manual(name = NULL, values=c("#840032","#d2a34e"))+ 
+  facet_wrap(~ occ + nsites,  strip.position = "top", labeller = label_wrap_gen(multi_line = FALSE)) + 
+  theme_bw(base_size = 14)
+```
+
+## Occupancy estimation 
+
+Concerning covariate effect size on $\Psi$ (figure below), the results were similar whatever the occupancy model we considered. The size of the study area did not affect the precision of the estimates of effect size on occupancy probability. We found a better precision for higher occupancy. We also found a slightly greater RMSE for single-visit occupancy in every scenario. Integrated occupancy models did not exhibit lower RMSE.
+
+<center>
+```{r echo=FALSE, fig.fullwidth=TRUE, message=FALSE, warning=FALSE, cache=TRUE,fig.height= 4, fig.width=9}
+plot_grid(poccRMSE, poccRB)
+```
+</center>
+
+## Detection probability 
+
+Regarding the sampling effort effect size on `p` (figure below), we found that a larger detection probability strongly improved the precision. In contrast with occupancy, the bigger the size of the study area, the better the precision. We did not find a better precision for higher occupancy. We also found a slightly greater RMSE for single-visit occupancy in every scenario. For integrated occupancy with a low detection probability, RMSE was greater in the single-visit model than in the repeated-visit model. For high detection probability, the use of integrated occupancy model significantly improves the RMSE of sampling effort effect size
+
+<center>
+```{r echo=FALSE, fig.fullwidth=TRUE, message=FALSE, warning=FALSE, cache=TRUE, fig.height= 7, fig.width=14}
+plot_grid(pseffRMSE, pseffRB)
+```
+</center>
+
+# Discussion
+
+Our simulation study showed that single-visit and repeated-visit occupancy models had similar performances in the estimation of covariate effect size for both occupancy and detection probabilities. Integrated occupancy models had close performances in the estimation of occupancy probability and significantly improved the estimation of detection probability in the case of high detection probability.
+Overall, our simulation results show that single-visit occupancy models can be used to obtain reliable estimates of occupancy and detection probabilities. Integrated occupancy, whether it is repeated-visit or single-visit, can help in estimating detection probability with better precision.

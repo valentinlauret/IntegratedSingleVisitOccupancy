@@ -1,0 +1,557 @@
+---
+title: "Simulation study"
+subtitle: "Comapring Repeated- and Single-visit occupancy"
+author: "Valentin Lauret, Hélène Labach, Matthieu Authier, Olivier Gimenez"
+output:
+  html_document:
+    highlight: textmate
+    theme: readable
+    toc: yes
+  word_document:
+    toc: yes
+---
+
+<style>
+p.caption {
+  font-style: italic;
+}
+</style>
+
+Comparing single-visit and repeated-visits integrated occupancy models.
+
+# Methods
+
+## Data simulation 
+
+Required packages 
+
+```{r warning=FALSE, message=FALSE}
+library(unmarked)
+library(tidyverse)
+library(cowplot)
+```
+
+### State process
+
+The occupancy state `z` was drawn from a Bernoulli distribution with parameter ψ, `z <- dbern(Ψ)`. We wrote ψ as a logistic function of an environmental covariate cov:
+
+<center>
+$logit(\psi) = \alpha_{0} + \alpha_{1} cov$  
+</center>
+
+where $\alpha_{0}$ and $\alpha_{1}$ are unknown parameters that need to be estimated.  
+
+We considered 4 sets of values for the alpha’s:  
+
+  - `alpha0 = -1.9` and `alpha1 =  0.2` that led to ψ approx. equal to 0.1
+  - `alpha0 = -0.5` and `alpha1 =  0.2` that led to ψ approx. equal to 0.3
+  - `alpha0 =  0.5` and `alpha1 =  0.2` that led to ψ approx. equal to 0.5
+  - `alpha0 = 2.5` and `alpha1 =  0.15` that led to ψ approx. equal to 0.9
+  
+ We used the `sim_state_cov()` function to simulate the `z` vector that contains the latent ecological state.
+ 
+ <center>
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Fig.1: Occupancy probability as function of a fictive environmental covariate, 4 scenarii used for simulations", cache = FALSE}
+library(tidyverse)
+library(cowplot)
+covparam.3 <- c(-0.5,0.2,0) # psi = 0.3
+covparam.1 <- c(-1.9,0.2,0) # psi = 0.1
+covparam.5 <- c(0.5,0.23,0) # psi = 0.5
+covparam.9 <- c(2.5,0.15,0) # psi = 0.9
+
+covenv <- runif(100,0,1)
+cov_rel.1 <- as.numeric(covparam.1[1]+covparam.1[2]*scale(covenv)+covparam.1[3]*scale(covenv)*scale(covenv))
+cov_rel.3 <- as.numeric(covparam.3[1]+covparam.3[2]*scale(covenv)+covparam.3[3]*scale(covenv)*scale(covenv))
+cov_rel.5 <- as.numeric(covparam.5[1]+covparam.5[2]*scale(covenv)+covparam.5[3]*scale(covenv)*scale(covenv))
+cov_rel.9 <- as.numeric(covparam.9[1]+covparam.9[2]*scale(covenv)+covparam.9[3]*scale(covenv)*scale(covenv))
+
+ggplot() + geom_line(aes(x=covenv,y=1/(1+exp(-cov_rel.3)), color="0.3"), lwd= 2) +
+  geom_line(aes(x=covenv,y=1/(1+exp(-cov_rel.1)),color="0.1"), lwd= 2) +
+  geom_line(aes(x=covenv,y=1/(1+exp(-cov_rel.5)),color="0.5"), lwd= 2) +
+  geom_line(aes(x=covenv,y=1/(1+exp(-cov_rel.9)),color="0.9"), lwd= 2) +
+  ylim(0,1) + ylab("Occupancy probability : Ψ") +xlab("Fictive covariate") + theme_bw(base_size = 14) + scale_color_viridis_d(name = "Average Ψ")
+```
+ </center>
+
+
+### Observation process
+
+The observations are drawn either from a Bernoulli distribution with parameter p or a Multinomial distribution depending on two detection probability `p1` and `p2` for the integrated occupancy model. We wrote `p` as a logistic function of a sampling effort covariate `seff`:
+
+<center>
+$logit(p) = \beta_{0} + \beta_{1} seff$  
+</center>
+
+where $\beta_{0}$ and $\beta_{1}$ are unknown parameters that need to be estimated.   
+
+We considered 4 sets of values for the beta’s:  
+
+  - `beta0 = -1.5` and `beta1 =  0.26` that led to p approx. equal to 0.15
+  - `beta0 = -0.6` and `beta1 =  0.25` that led to p approx. equal to 0.35
+  - `beta0 = 0.3` and `beta1 =  0.26` that led to p approx. equal to 0.5
+  - `beta0 = 1.8` and `beta1 =  0.3` that led to p approx. equal to 0.8  
+  
+We used the `sim_obs_cov()` function to simulate the `y` vector that contains the detections/non-detections.
+
+ <center>
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap="Fig.2: Detetion probability as function of a fictive sampling effort, 4 scenarii used for simulations", cache = FALSE}
+ Seff.8 <- rnorm(100)#,rnorm(nsites),rnorm(nsites),rnorm(nsites),rnorm(nsites),rnorm(nsites),rnorm(nsites),rnorm(nsites)))
+obsparam.5 <- c(0.3,0.26,0) # p = 0.5
+obsparam.8 <- c(1.8,0.3,0) # p = 0.8
+obsparam.1 <- c(-1.5,0.26,0) # p = 0.5
+obsparam.3 <- c(-0.6,0.25,0)
+
+obs_rel.1 <- as.numeric(obsparam.1[1]+obsparam.1[2]*Seff.8+obsparam.1[3]*Seff.8*Seff.8)
+obs_rel.3 <- as.numeric(obsparam.3[1]+obsparam.3[2]*Seff.8+obsparam.3[3]*Seff.8*Seff.8)
+obs_rel.5 <- as.numeric(obsparam.5[1]+obsparam.5[2]*Seff.8+obsparam.5[3]*Seff.8*Seff.8)
+obs_rel.8 <- as.numeric(obsparam.8[1]+obsparam.8[2]*Seff.8+obsparam.8[3]*Seff.8*Seff.8)
+
+ggplot() + geom_line(aes(x=Seff.8,y=1/(1+exp(-obs_rel.8)), color="0.8"), lwd= 2) +
+  geom_line(aes(x=Seff.8,y=1/(1+exp(-obs_rel.5)),color="0.5"), lwd= 2) +
+  geom_line(aes(x=Seff.8,y=1/(1+exp(-obs_rel.1)),color="0.1"), lwd= 2) +
+  geom_line(aes(x=Seff.8,y=1/(1+exp(-obs_rel.3)),color="0.3"), lwd= 2) +
+  ylim(0,1) + ylab("Detection probability : p") +xlab("Sampling effort covariate") + theme_bw(base_size = 14) + scale_color_viridis_d(name = "Average p",begin = 0.2, end = 0.9)
+
+```
+ </center>
+
+We simulated 4 different sampling occasions for repeated-visit occupancy. For single-visit occupancy, we formatted the data as described in the Methods section. For the sampling effort at site `i`, we summed the sampling effort over the 4 sampling occasions at site `i`, with `seff_sv <- apply(seff_rv,1,sum)`. For the detection/non-detection matrix, we considered the site as occupied if the species was detected at least once over the 4 sampling occasions, with `y_sv <- apply(y_rv,1,max)`.
+
+### Study area 
+
+We simulated `z` and `y` for a study area of 100 sites. 
+
+## Models
+
+For each combination of Ψ and p we fitted 2 occupancy models:  
+
+  - Repeated-visit occupancy model (RV)
+  - Single-visit occupancy model (SV)
+
+We have 16 ecological situations depending on Ψ and p.  
+  
+For each scenario, we ran 100 simulations and fitted the 2 occupancy models.
+
+## Performances
+
+To compare the performances of the different occupancy models we calculated the relative bias RB, and the root mean square error over the `S = 100` simulations :  
+
+  - Relative bias: $RB = \frac{1}{S} \sum_{1}^{S} \frac{(\widehat{\theta}_{s}-\theta)}{\theta}$  
+  
+  - Root Mean Square Error: $RMSE = \sqrt{ \frac{1}{S} \sum_{1}^{S} (\widehat{\theta}_{s}-\theta)^2}$
+
+# Results
+
+## Occupancy estimation 
+
+Regarding the covariate effect size on $\Psi$ (Fig.3), we found slightly greater RMSE and RB for single-visit occupancy in most scenario, except in the case, of high occupancy (`\Psi = 0.9`) and low detection probability (`p = 0.1` or `p = 0.3`) where differences are greater. Overall, the results were similar whatever the occupancy models we considered.
+
+```{r,echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE}
+# load function and data used 
+
+# load functionS
+sim_state_cov <- function(nb_sites=nsites,init_occ = covparam, covenv = covenv){
+  
+  # define various quantities
+  R = nb_sites # number of sites
+  
+  l.psi <- init_occ[1] + init_occ[2] * covenv + init_occ[3] * covenv * covenv
+  psi1 <-  1 / ( 1 + exp( -l.psi ))# quadratic relation of the covariate with initial occupancy
+  
+  # pre-allocate memory
+  site <- 1:R # Sites
+  
+  z <- array(dim = c(R)) # Expected and realized occurrence
+  
+  # define state process
+  # first year/season
+  z <- rbinom(R, 1, psi1) # Initial occupancy state
+  
+  
+  return(z)
+}
+sim_obs_cov <- function(z=z, nb_occ = nocc,Seff, obsparam = obsparam){
+  
+  # define various quantities
+  R = length(z) # number of sites
+  K = nb_occ # number of occasions
+  
+  y <- array(NA, dim = c(R,K))
+  p <- array(NA, dim = c(R,K))
+  
+  # define observation process
+  
+  for(i in 1:R){
+    for(k in 1:K){
+      
+      l.p <- obsparam[1] + obsparam[2] * Seff[i,k] + obsparam[3] * Seff[i,k] * Seff[i,k]# quadratic relation of the covariate with initial occupancy
+      
+      p[i,k] <- ( 1 / ( 1 + exp(- l.p )))
+      
+      prob <- z[i] * p[i,k]
+      y[i,k] <- rbinom(1,1, prob= prob)
+    } #k
+  } #i
+  
+  
+  # format data
+  return(y)
+}
+loopUnmrkd<- function(nsites, nocc, nsim, covparam, obsparam, Seff, Covenv){
+  
+  
+  #### allocate memories for posterior estimates ####
+  
+  p_i <- rep(NA, nsim)
+  psi_i <- rep(NA, nsim)
+
+  bcov_i <- rep(NA, nsim)
+  bseff_i <- rep(NA, nsim)
+
+  p_ii <- rep(NA, nsim)
+  psi_ii <- rep(NA, nsim)
+
+  bcov_ii <- rep(NA, nsim)
+  bseff_ii<- rep(NA, nsim)
+
+
+  # allocate memory to saved parameters
+  
+  rbpsi_i    <- rep(NA, nsim)
+  rmsepsi_i   <- rep(NA, nsim)
+  rbcov_i     <- rep(NA, nsim)
+  rmsecov_i <- rep(NA, nsim)
+  rbp_i     <- rep(NA, nsim)
+  rmsep_i    <- rep(NA, nsim)
+
+  rbseff_i    <- rep(NA, nsim)
+  rmseseff_i  <- rep(NA, nsim)
+  # ii<- rep(NA, nsim)
+  rbpsi_ii    <- rep(NA, nsim)
+  rmsepsi_ii  <- rep(NA, nsim)
+  
+  rbcov_ii    <- rep(NA, nsim)
+  rmsecov_ii  <- rep(NA, nsim)
+ 
+  rbp_ii      <- rep(NA, nsim)
+  rmsep_ii    <- rep(NA, nsim)
+
+  rbseff_ii   <- rep(NA, nsim)
+  rmseseff_ii <- rep(NA, nsim)
+                         # iv
+
+
+  #### loop over nsim ####
+  for( s in 1:nsim){
+    print(s)
+    
+    # simulate datasets s
+    
+    z <- sim_state_cov(nb_sites = nsites, covenv= covenv, init_occ= covparam)
+    y <- sim_obs_cov(z,nocc,Seff= Seff, obsparam= obsparam)
+    
+    p <- obsparam
+    
+    
+# WITH Unmarked  
+   
+    #### i)  RV ####
+    
+    obsCovs <- list(Seff=Seff)
+                    
+    wt <- unmarkedFrameOccu(y = y, siteCovs = as.data.frame(covenv), obsCovs = obsCovs)
+summary(wt)
+
+  fm1 <- occu(~ Seff ~ covenv, wt)
+  fm1
+
+  state <- fm1@estimates@estimates$state@estimates
+  det <- fm1@estimates@estimates$det@estimates
+  
+  # intercept
+    p_i[s] <- exp(det[1])/(1+exp(det[1]))
+    psi_i[s] <- exp(state[1])/(1+exp(state[1]))
+
+    # slope linear estimate (Q: do we have to save the quadratic estimates-)
+    
+    bcov_i[s] <- exp(state[2])/(1+exp(state[2]))
+    bseff_i[s] <- exp(det[2])/(1+exp(det[2]))
+
+    #### ii ) SV ####
+ 
+    # same model jags than i)
+    
+    # Bundle data
+    
+    ysv <-  matrix(apply(y,1,max))
+    
+    Seffsv <- matrix(apply(Seff,1,sum))
+    obsCovs <- list(Seff=Seffsv)
+    
+    wt <- unmarkedFrameOccu(y = ysv, siteCovs = as.data.frame(covenv), obsCovs = obsCovs)
+    summary(wt)
+    
+    fm1 <- occu(~ Seff ~ covenv, wt)
+    fm1
+    
+    state <- fm1@estimates@estimates$state@estimates
+    det <- fm1@estimates@estimates$det@estimates
+    
+    # intercept
+    p_ii[s] <- exp(det[1])/(1+exp(det[1]))
+    psi_ii[s] <- exp(state[1])/(1+exp(state[1]))
+    
+    # slope linear estimate (Q: do we have to save the quadratic estimates-)
+    
+    bcov_ii[s] <- exp(state[2])/(1+exp(state[2]))
+    bseff_ii[s] <- exp(det[2])/(1+exp(det[2]))
+    
+
+
+  # calcul and save RMSE and RB
+  
+  # i 
+  rbpsi_i[s]        <- (psi_i[s]-covparam[1])/covparam[1]   # RB alpha.psi
+  rmsepsi_i[s]      <- ((psi_i[s] - covparam[1])^2) # RMSE alpha.psi
+  
+  rbcov_i[s]        <- (bcov_i[s]-covparam[2])/covparam[2] # RB cov
+  rmsecov_i[s]      <- ((bcov_i[s] - covparam[2])^2) # RMSE cov
+  
+  rbp_i[s]          <- (p_i[s]-obsparam[1])/obsparam[1]       # RB alpha p 
+  rmsep_i[s]        <- ((p_i[s] - obsparam[1])^2) # RMSE alpha p
+  
+  rbseff_i[s]       <- (bseff_i[s]-obsparam[2])/obsparam[2]   # RB obs
+  rmseseff_i[s]     <- ((bseff_i[s] - obsparam[2])^2) # RMSE obs
+  
+  
+  # ii
+  rbpsi_ii[s]       <- (psi_ii[s]-covparam[1])/covparam[1]   # RB alpha.psi
+  rmsepsi_ii[s]     <- ((psi_ii[s] - covparam[1])^2) # RMSE alpha.psi
+  
+  rbcov_ii[s]       <- (bcov_ii[s]-covparam[2])/covparam[2]   # RB cov
+  rmsecov_ii[s]     <- ((bcov_ii[s] - covparam[2])^2) # RMSE cov
+  
+  rbp_ii[s]         <- (p_ii[s]-obsparam[1])/obsparam[1]        # RB alpha p 
+  rmsep_ii[s]       <- ((p_ii[s] - obsparam[1])^2) # RMSE alpha p
+  
+  rbseff_ii[s]      <- (bseff_ii[s]-obsparam[2])/obsparam[2]  # RB obs
+  rmseseff_ii[s]    <- ((bseff_ii[s] - obsparam[2])^2) # RMSE obs
+  
+  } # end for 
+  
+
+  para <- data.frame("nsites" = nsites,"nocc" =  nocc, "nsim" = nsim, "covparam"= covparam, "obsparam"= obsparam)
+  
+  return(list(para, # i 
+              rbpsi_i,rmsepsi_i , rbcov_i ,
+              rmsecov_i,
+              rbp_i ,
+              rmsep_i ,
+              rbseff_i , 
+              rmseseff_i ,
+              # ii
+              rbpsi_ii,
+              rmsepsi_ii,
+              rbcov_ii,
+              rmsecov_ii,
+              rbp_ii,
+              rmsep_ii,
+              rbseff_ii,
+              rmseseff_ii
+             ))
+  
+} # endfunction
+
+# load param for logistic regressions 
+
+# occupancy
+covparam.3 <- c(-0.5,0.2,0) # psi = 0.3
+covparam.1 <- c(-1.9,0.2,0) # psi = 0.1
+covparam.5 <- c(0.5,0.23,0) # psi = 0.5
+covparam.9 <- c(2.5,0.15,0) # psi = 0.9
+
+covparam <- list(covparam.3 =  covparam.3, 
+                 covparam.1 =  covparam.1,
+                 covparam.5 =  covparam.5,
+                 covparam.9 <- covparam.9)
+
+# detection
+obsparam.5 <- c(0.3,0.26,0)  # p = 0.5
+obsparam.8 <- c(1.8,0.3,0)   # p = 0.8
+obsparam.1 <- c(-1.5,0.26,0) # p = 0.1
+obsparam.3 <- c(-0.6,0.25,0) # p = 0.3
+
+obsparam <- list(obsparam.5 <- obsparam.5,
+                 obsparam.8 <- obsparam.8,
+                 obsparam.1 <- obsparam.1,
+                 obsparam.3 <- obsparam.3)
+```
+
+```{r message=FALSE, warning=FALSE, cache=TRUE, include=FALSE}
+# run the analysis
+
+# simulation param
+
+nsites <- 100
+nsim = 100
+nocc = 4
+
+# covariates
+
+Seff <- data.frame(cbind(rnorm(nsites),rnorm(nsites),rnorm(nsites),rnorm(nsites)))
+Covenv <- covenv <- runif(nsites,0,1)
+ 
+# loop over all combinations 
+res <- list()
+i <- 0
+for(c in 1: length(covparam)){  #i <- i+1
+ 
+ for(o in 1:length(obsparam)){
+    i <- i+1 
+    
+   print("obs",o)
+   print("cov",c)
+   res[[i]] <- loopUnmrkd(nsites = nsites, nocc = nocc, nsim = nsim, covparam = covparam[[c]], obsparam[[o]], Seff, Covenv)
+
+  }# end o
+} # end c
+```
+
+```{r,echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE}
+# process results
+
+# label each param combination in the res list
+names(res) <- c("0.1:0.1","0.1:0.3","0.1:0.5","0.1:0.8",
+                 "0.3:0.1","0.3:0.3","0.3:0.5","0.3:0.8",
+                 "0.5:0.1","0.5:0.3","0.5:0.5","0.5:0.8",
+                 "0.9:0.1","0.9:0.3","0.9:0.5","0.9:0.8")
+
+nsim = 100
+
+# make a function to store mean values over the nsim simulations
+extract.mean <- function(res, para){
+  m <- c()
+  for(i in 1:length(res)){
+    m[i] <- mean(res[[i]][[para]])
+  } # i
+  return(m)
+}
+ 
+# create tibbles with RB and RMSE for psi and p
+
+RB.psi <- tibble(model =c("0.1:0.1","0.1:0.3","0.1:0.5","0.1:0.8",
+                          "0.3:0.1","0.3:0.3","0.3:0.5","0.3:0.8",
+                          "0.5:0.1","0.5:0.3","0.5:0.5","0.5:0.8",
+                          "0.9:0.1","0.9:0.3","0.9:0.5","0.9:0.8"),
+                 psi.interceptRV = extract.mean(res,2),
+                 psi.interceptSV = extract.mean(res,10),
+                 psi.covRV = extract.mean(res,4),
+                 psi.covSV = extract.mean(res,12)) %>% 
+  mutate(psi.dintercept = psi.interceptRV - psi.interceptSV,
+         psi.dcov = psi.covRV - psi.covSV)
+ 
+RMSE.psi <- tibble(model =c("0.1:0.1","0.1:0.3","0.1:0.5","0.1:0.8",
+                            "0.3:0.1","0.3:0.3","0.3:0.5","0.3:0.8",
+                            "0.5:0.1","0.5:0.3","0.5:0.5","0.5:0.8",
+                            "0.9:0.1","0.9:0.3","0.9:0.5","0.9:0.8"),
+                   psi.interceptRV = sqrt(extract.mean(res,3)),
+                   psi.interceptSV = sqrt(extract.mean(res,11)),
+                   psi.covRV = sqrt(extract.mean(res,5)),
+                   psi.covSV = sqrt(extract.mean(res,13)))%>% 
+  mutate(psi.dintercept = psi.interceptRV - psi.interceptSV,
+         psi.dcov = psi.covRV - psi.covSV)
+
+
+RB.p <- tibble(model =c("0.1:0.1","0.1:0.3","0.1:0.5","0.1:0.8",
+                        "0.3:0.1","0.3:0.3","0.3:0.5","0.3:0.8",
+                        "0.5:0.1","0.5:0.3","0.5:0.5","0.5:0.8",
+                        "0.9:0.1","0.9:0.3","0.9:0.5","0.9:0.8"),
+               p.interceptRV = extract.mean(res,6),
+               p.interceptSV = extract.mean(res,14),
+               p.covRV = extract.mean(res,8),
+               p.covSV = extract.mean(res,16))%>% 
+  mutate(p.dintercept = p.interceptRV - p.interceptSV,
+         p.dcov = p.covRV - p.covSV)
+
+RMSE.p <- tibble(model =c("0.1:0.1","0.1:0.3","0.1:0.5","0.1:0.8",
+                          "0.3:0.1","0.3:0.3","0.3:0.5","0.3:0.8",
+                          "0.5:0.1","0.5:0.3","0.5:0.5","0.5:0.8",
+                          "0.9:0.1","0.9:0.3","0.9:0.5","0.9:0.8"),
+                 p.interceptRV = sqrt(extract.mean(res,7)),
+                 p.interceptSV = sqrt(extract.mean(res,15)),
+                 p.covRV = sqrt(extract.mean(res,9)),
+                 p.covSV = sqrt(extract.mean(res,17)))%>% 
+  mutate(p.dintercept = p.interceptRV - p.interceptSV,
+         p.dcov = p.covRV - p.covSV)
+```
+
+<center>
+```{r echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE,fig.fullwidth = TRUE, fig.height= 12, fig.width=16 ,fig.cap="Fig. 3: RMSE and RB for all occupancy models"}
+# make plots for covariate effect size
+
+# create tibble
+r <- tibble(model = rep(RMSE.psi$model, 2),rmse.occ = c(RMSE.psi$psi.covRV,RMSE.psi$psi.covSV), rmse.p = c(RMSE.p$p.covRV,RMSE.p$p.covSV), 
+            rb.occ = c(RB.psi$psi.covRV,RB.psi$psi.covSV), rb.p = c(RB.p$p.covRV,RB.p$p.covSV)) %>% 
+  mutate(type = c(rep("RV",length(model)/2),rep("SV",length(model)/2)),
+         occ = c(rep("Ψ = 0.1", 4),rep("Ψ = 0.3", 4),rep("Ψ = 0.5", 4),rep("Ψ = 0.9", 4),
+                 rep("Ψ = 0.1", 4),rep("Ψ = 0.3", 4),rep("Ψ = 0.5", 4),rep("Ψ = 0.9", 4)),
+         det = rep(c("0.1", "0.3","0.5","0.8"), 8))
+             
+# plot 1: RMSE in occupancy covariate
+pocc1 <- r %>%
+  ggplot() +
+  aes(x = det, y = rmse.occ, fill = type) + 
+  geom_col(position = "dodge", width=.6) + 
+  labs(x = 'Detection probability',
+       y = 'RMSE in occupancy covariate effect size') + 
+  scale_fill_manual(name = NULL, values=c("#442b48","#32a287"))+ 
+    facet_wrap(~ occ,  strip.position = "top", labeller = label_wrap_gen(multi_line = FALSE)) + 
+  theme_bw(base_size = 14)
+
+# plot 2: RB in occupancy covariate
+pocc2 <- r %>%
+  ggplot() +
+  aes(x = det, y = rb.occ, fill = type) + 
+  geom_col(position = "dodge", width=.6) + 
+  labs(x = 'Detection probability',
+       y = 'RB in occupancy covariate effect size') + 
+  scale_fill_manual(name = NULL, values=c("#442b48","#32a287"))+ 
+  facet_wrap(~ occ,  strip.position = "top", labeller = label_wrap_gen(multi_line = FALSE)) + 
+  theme_bw(base_size = 14)
+
+# plot 3: RMSE in detection covariate, i.e. sampling effort
+pp1 <- r %>%
+  ggplot() +
+  aes(x = det, y = rmse.p, fill = type) + 
+  geom_col(position = "dodge", width=.6) + 
+  labs(x = 'Detection probability',
+       y = 'RMSE in sampling effort effect size') + 
+  scale_fill_manual(name = NULL, values=c("#442b48","#32a287"))+ 
+  facet_wrap(~ occ,  strip.position = "top", labeller = label_wrap_gen(multi_line = FALSE)) + 
+  theme_bw(base_size = 14)
+
+# plot 4: RB in detection covariate, i.e. sampling effort
+pp2 <- r %>%
+  ggplot() +
+  aes(x = det, y = rb.p, fill = type) + 
+  geom_col(position = "dodge", width=.6) + 
+  labs(x = 'Detection probability',
+       y = 'RB in sampling effort effect size') + 
+  scale_fill_manual(name = NULL, values=c("#442b48","#32a287"))+ 
+  facet_wrap(~ occ,  strip.position = "top", labeller = label_wrap_gen(multi_line = FALSE)) + 
+  theme_bw(base_size = 14)
+
+# plot all together
+plot_grid(pocc1,pocc2,pp1,pp2, ncol = 2, nrow = 2)
+```
+</center>
+
+## Detection probability 
+
+Regarding the sampling effort effect size on p (Fig.3), we also found a similar RMSE and RB whatever the occupancy model considered.
+
+# Discussion
+
+Our simulations study showed that single-visit and repeated-visit occupancy models had similar results in the estimation of covariate effect size for both ocucpancy and detection probabilities. To be consistent with our manuscript, we reported performances of covariates effect size and explored simple logistic regressions to describe models paramters. To have a complete understanding of models performances, one might wants to look at wider range of relationships, and observe all models parameters (e.g. intercept).
+
+Overall, our simulation results show that single-visit occupancy models can be used to obtain reliable estimates of occupancy and detection probabilities.
