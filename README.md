@@ -5,10 +5,10 @@ This repository contains all codes and data to run the occupancy models present 
 Twitter: [@ValentinLauret](https://twitter.com/ValentinLauret)  
 Mail: [valentin.lauret@cefe.cnrs.fr](mailto:valentin.lauret@cefe.cnrs.fr)
 
-## Simulations study
+## Simulation studies
 
-  - Simulation [Single- vs. Repeated-visit](/Simulations/SimRVSVJags.html) occupancy
-  - Simulation [Integrated occupancy models](/Simulations/simIOM.html)
+  - Simulation [Single- vs. Repeated-visit](/Simulations/SuppInfo1.html) occupancy
+  - Simulation [Integrated occupancy models](/Simulations/SuppInfo2.html)
 
 ## Bottlenose dolphins: JAGS code and data  
 
