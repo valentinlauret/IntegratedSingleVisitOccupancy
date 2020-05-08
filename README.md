@@ -26,5 +26,9 @@ Find attached data and codes to run occupancy analyses with the bottlenose dolph
   - At-sea surveys SV occupancy model
   - Integrated SV occupancy model
   
+##### Integrated occupancy model mixing single- and repeated-visits
+
+- [Methods, codes, and results](https://github.com/valentinlauret/IntegratedSingleVisitOccupany/tree/master/Bottlenose%20Dolphins:%20codes%20and%20data/Mixed%20integrated%20occupancy%20model)
+
   
 
