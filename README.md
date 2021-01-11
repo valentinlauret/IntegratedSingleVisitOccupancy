@@ -7,13 +7,13 @@ Mail: [valentin.lauret@cefe.cnrs.fr](mailto:valentin.lauret@cefe.cnrs.fr)
 
 ## Simulations
 
-  - Simulation [Single-visit vs. Repeated-visits](/Supporting Information/SuppInfoRVSV.pdf) occupancy
-  - Simulation [Integrated occupancy models](/Supporting Information/SuppInfoIOM.pdf)
+  - Simulation [Single-visit vs. Repeated-visits](/Supporting_Information/SuppInfoRVSV.pdf) occupancy
+  - Simulation [Integrated occupancy models](/Supporting_Information/SuppInfoIOM.pdf)
   - [Codes and data](/Simulations)
 
 ## Bottlenose dolphins: JAGS code and data  
 
-Find attached data and codes to run occupancy analyses with the bottlenose dolphins case study. Please, contact me if any trouble.  
+Find attached [data and codes](dolphins_codes/) to run occupancy analyses with the bottlenose dolphins case study. Please, contact me if any trouble.  
 
 ##### Repeated-visits (RV) occupancy models
 
@@ -29,7 +29,7 @@ Find attached data and codes to run occupancy analyses with the bottlenose dolph
   
 ##### Integrated occupancy model mixing single- and repeated-visits
 
-- See [Supporting information](/Supporting Information/SuppInfoHybrid.pdf)
+- See [Supporting information](/Supporting_Information/SuppInfoHybrid.pdf)
 
   
 
