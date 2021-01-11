@@ -5,10 +5,11 @@ This repository contains all codes and data to run the occupancy models present 
 Twitter: [@ValentinLauret](https://twitter.com/ValentinLauret)  
 Mail: [valentin.lauret@cefe.cnrs.fr](mailto:valentin.lauret@cefe.cnrs.fr)
 
-## Simulation studies
+## Simulations
 
-  - Simulation [Single- vs. Repeated-visit](/Simulations/SuppInfo1.html) occupancy
-  - Simulation [Integrated occupancy models](/Simulations/SuppInfo2.html)
+  - Simulation [Single-visit vs. Repeated-visits](/Supporting Information/SuppInfoRVSV.pdf) occupancy
+  - Simulation [Integrated occupancy models](/Supporting Information/SuppInfoIOM.pdf)
+  - [Codes and data](/Simulations)
 
 ## Bottlenose dolphins: JAGS code and data  
 
@@ -28,7 +29,7 @@ Find attached data and codes to run occupancy analyses with the bottlenose dolph
   
 ##### Integrated occupancy model mixing single- and repeated-visits
 
-- [Methods, codes, and results](https://github.com/valentinlauret/IntegratedSingleVisitOccupany/tree/master/Bottlenose%20Dolphins:%20codes%20and%20data/Mixed%20integrated%20occupancy%20model)
+- See [Supporting information](/Supporting Information/SuppInfoHybrid.pdf)
 
   
 
