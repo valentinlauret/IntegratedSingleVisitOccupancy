@@ -7,7 +7,7 @@ Mail: [valentin.lauret@cefe.cnrs.fr](mailto:valentin.lauret@cefe.cnrs.fr)
 
 ## Data exploration
 
-In [this file](DataExplo.pdf), we described the context of bottlenose dolphin _(Trusiops truncatus)_ monitoring in the French Mediterranean Sea. We provided a regional map of the study area, and a map of the monitoring programs used in this analyze.  
+In [this file](DataExplo.pdf), we described the context of bottlenose dolphin _(Tursiops truncatus)_ monitoring in the French Mediterranean Sea. We provided a regional map of the study area, and a map of the monitoring programs used in this analyze.  
 
 ## Simulations
 
