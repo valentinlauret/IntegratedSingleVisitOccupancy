@@ -5,6 +5,10 @@ This repository contains all codes and data to run the occupancy models present 
 Twitter: [@ValentinLauret](https://twitter.com/ValentinLauret)  
 Mail: [valentin.lauret@cefe.cnrs.fr](mailto:valentin.lauret@cefe.cnrs.fr)
 
+## Data exploration
+
+In [this file](DataExplo.pdf), we described the context of bottlenose dolphin _(Trusiops truncatus)_ monitoring in the French Mediterranean Sea. We provided a regional map of the study area, and a map of the monitoring programs used in this analyze.  
+
 ## Simulations
 
   - Simulation [Single-visit vs. Repeated-visits](/Supporting_Information/SuppInfoRVSV.pdf) occupancy
