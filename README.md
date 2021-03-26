@@ -5,9 +5,11 @@ This repository contains all codes and data to run the occupancy models present 
 Twitter: [@ValentinLauret](https://twitter.com/ValentinLauret)  
 Mail: [valentin.lauret@cefe.cnrs.fr](mailto:valentin.lauret@cefe.cnrs.fr)
 
-## Data exploration
+## Data exploration and initiation to occupancy models
 
-In [this file](DataExplo.pdf), we described the context of bottlenose dolphin _(Tursiops truncatus)_ monitoring in the French Mediterranean Sea. We provided a regional map of the study area, and a map of the monitoring programs used in this analyze.  
+In [this file](DataExplo.pdf), we described the context of bottlenose dolphin _(Tursiops truncatus)_ monitoring in the French Mediterranean Sea. We provided a regional map of the study area, and a map of the monitoring programs used in this analyze. 
+
+In [this file](Worked_example.pdf), we first list the assumptions required for single-visit, repeated-visits, and integrated occupancy models explicitly trying to make comparison between the methods clear. Then, we provided a worked example of the likelihood functions single-visit, repeated-visits, and integrated occupancy models for the same hypothetical data for one site. We hope to clarify the differences in the methods, as to how the information is used. 
 
 ## Simulations
 
