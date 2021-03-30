@@ -1,0 +1,82 @@
+---
+title: "Worked example of the likelihood functions for repeated-visits, single-visit, and integrated occupancy models"
+author: "Valentin Lauret, Hélène Labach, Matthieu Authier, Olivier Gimenez"
+date: "26/03/2021"
+output: 
+  word_document: 
+    toc: true
+  pdf_document: 
+    highlight: monochrome
+    latex_engine: xelatex
+    fig_width: 8
+    fig_height: 5
+    toc: yes
+bibliography: references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Supporting information of the article *Using single visits into integrated occupancy models to make the most of existing monitoring programs.*
+
+# A worked example
+
+In this section, we provide a worked example of the detection histories and the likelihood functions for SV, RV and Integrated occupancy models for the same hypothetical data for one site *s*. We aimed at clarifying the differences in the methods, as to how the information is used.
+
+## Notations
+
+Let's consider a fictive site *S*, and $y_s$ refers to the detection history made at site *s*. Two monitoring programs **A** & **B** collect data at site *s* during one year. Then, $y_{s}^A$ and $y_{s}^B$ refer to the detection histories collected at site *s* by respectively monitoring program **A** and **B**.
+
+Each monitoring program collected binary data during one year at site *s, i.e.* we coded $y=1$ if the species is detected, and $y=0$ is the species is not detected. To consider the monitoring period, we separated two situations and applied different occupancy models in response:
+
+1.  We divided monitoring period into 4 sampling occasions *J* and analyzed the data with a RV occupancy model.
+2.  We consider the entire monitoring period as a single sampling occasion and analyzed the data with a SV occupancy model.
+
+## Detections histories and associated likelihood
+
+At this point, we will present the detection histories we obtain from each of the two approaches presented above to deal with the collected data. Then we will name the relevant occupancy model to analyze such the detection history and we will display the likelihood to link the detection history and latent occupancy state (*i.e.* site *s* occupied by the species $z_s =1$, site *s* unoccupied by the species $z_s = 0$).
+
+### 1. For RV occupancy
+
+When dividing the monitoring period into 4 sampling occasion, program **A** detected the species during occasion $J=2$, and $J=4$. The species remained undetected during sampling occasions $J=1$, and $J=3$.
+
+$$y_{s}^{A} = \{ 0, 1, 0, 1 \}$$
+
+To analyze data collected by program **A** when having 4 sampling occasions, we used a standard repeated-visits occupancy model. For each sampling occasion $j$, we calculated the likelihood of collected data $y_{s,j}^A$ as a Bernoulli draw, $y_{s,j}^{A} \sim Bernoulli(z_s p_{s,j}^A)$, with $p_{s,j}^A$ the probability of detecting the species with program **A** at site *s* during sampling occasion $j$.
+
+Similarly, for program **B**, the detection history is $y_{s}^{B} = \{1, 0, 0, 1\}$. We used the same standard RV occupancy model, and for each $j$, the likelihood is $y_{s,j}^{B} \sim Bernoulli(z_s p_{s,j}^B)$
+
+### 2. For SV occupancy
+
+When considering the entire monitoring period as a single sampling occasion, both program **A** and **B** detected the species at site *s*.
+
+$y_{s}^{A} = \{1\}$
+
+$y_{s}^{B} = \{1\}$
+
+To analyze data collected by program **A** when considering one single sampling occasion, we used a single-visit occupancy model. We calculated the likelihood of collected data $y_{s}^A$ as a Bernoulli draw, $y_{s}^{A} \sim Bernoulli(z_s p_{s}^A)$, with $p_{s}^A$ the probability of detecting the species with program **A** at site *s*.
+
+Similarly, for program **B**, the detection history is $y_{s}^{B} = \{1 \}$. We used the same SV occupancy model, and the likelihood is $y_{s}^{B} \sim Bernoulli(z_s p_{s}^B)$
+
+### 3. For integrated RV occupancy models
+
+When analyzing jointly both programs **A** & **B**, the detection/non-detection is coded differently, we coded $y=0$ is the species is not detected by program **A** nor by program **B**, $y=1$ if the species is detected only by program **A**, $y=2$ if the species is detected only by program **B**, and $y=3$ if the species is detected by both programs **A** & **B**.
+
+When dividing the monitoring period into 4 sampling occasions, we saw above that binary detection histories of both program at iste *s* are $y_{s}^{A} = \{ 0, 1, 0, 1 \}$ and $y_{s}^{B} = \{1, 0, 0, 1\}$.
+
+Then, when analyzing jointly both programs with a RV detection process , the detection history is $$y_{s}^{AB} = \{ 2, 1, 0, 3 \}$$
+
+To analyze data collected by both programs **A** and **B** when considering 4 sampling occasions, we used an integrated RV occupancy model. We calculated the likelihood of collected data $y_{s,j}^{AB}$ as a Categorical draw, $y_{s}^{A} \sim Multinomial(1,z_s\pi_{s,j})$, with
+
+$$\pi_{s,j}=\{ P(y_{s,j}^{AB} =0),P(y_{s,j}^{AB}=1), P(y_{s,j}^{AB}=2), P(y_{s,j}^{AB}=3) \}$$ $$\pi_{s,j} = \{ 1- p_{s,j}^A - p_{s,j}^B + p_{s,j}^A p_{s,j}^B, p_{s,j}^A(1- p_{s,j}^B), p_{s,j}^B(1- p_{s,j}^A), p_{s,j}^A p_{s,j}^B \}$$
+
+This likelihood formulation requires that the two detection processes are independent.
+
+### 4. For integrated SV occupancy models
+
+Subsequently, when analyzing jointly both programs **A** & **B** with a SV detection process, the detection history is $$y_{s}^{AB} = \{ 3 \}$$
+
+Then, to analyze data collected by both programs **A** and **B** when considering a single sampling occasion, we used an integrated **SV** occupancy model. We calculated the likelihood of collected data $y_{s}^{AB}$ as a Categorical draw, $y_{s}^{A} \sim Multinomial(1,z_s\pi_{s})$, with
+
+$$\pi_{s}=\{ P(y_{s}^{AB} =0),P(y_{s}^{AB}=1), P(y_{s}^{AB}=2), P(y_{s}^{AB}=3) \}$$ $$\pi_{s} = \{ 1- p_{s}^A - p_{s}^B + p_{s}^A p_{s}^B,\ \ p_{s}^A(1- p_{s}^B), \ \  p_{s}^B(1- p_{s}^A), \ \  p_{s}^A p_{s}^B \}$$

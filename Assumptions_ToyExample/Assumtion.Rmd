@@ -1,0 +1,106 @@
+---
+title: "Modeling assumptions of repeated-visits, single-visit, and integrated occupancy models"
+author: "Valentin Lauret, Hélène Labach, Matthieu Authier, Olivier Gimenez"
+date: "26/03/2021"
+output: 
+  word_document:
+    toc: true
+  pdf_document: 
+    highlight: monochrome
+    latex_engine: xelatex
+    fig_width: 8
+    fig_height: 5
+    toc: yes
+bibliography: references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Supporting information of the article *Using single visits into integrated occupancy models to make the most of existing monitoring programs.*
+
+# Modeling assumptions
+
+In this section we aimed to list the modeling assumptions of the Repeated-Visits (RV), Single-Visit (SV), and Integrated occupancy models that we ran in the manuscript.
+
+## Repeated-visits occupancy models
+
+Citing, [@occupanc2006], there are several critical assumptions for the standard occupancy model, i.e. RV occupancy.
+
+1.  Occupancy status at each site does not change over the survey season; that is, sites are "closed" to changes in occupancy
+
+2.  The probability of occupancy is constant across sites, or differences in occupancy probability are modeled using covariates
+
+3.  The probability of detection is constant across all sites and surveys or is a function of site-survey covariates
+
+4.  There is no unmodeled heterogeneity in detection probabilities
+
+5.  Detection of species and detection histories at each location are independent
+
+## Single-visit occupancy
+
+Developing SV occupancy models, [@lele2012] underlined that SV occupancy relax the closure assumption of sampled sites between visits. Besides, the literature about SV provide some requirements and guidance to a valid application of SV occupancy models. We listed the elements below:
+
+1.  Occupancy probability and detection probability depend on covariates
+
+2.  At least two independant continuous covariates are used to estimate occupancy probability and detection probability. Shared covariates can result in biased estimates for regression coefficients.
+
+3.  Ensure adequate numbers of occurrence. [@peach2017], suggested that "estimates of occupancy probability remained unbiased across our scenarios, whereas colonization and extinction estimates became biased as occupancy probability approached extremes (i.e. 0.1 or 0.9)."
+
+4.  Prefer nonlinear detection model to provide accurate parameter estimates and to assume a more realistic relationship between detection and effort [@knape2015] for single-visit occupancy models.
+
+## Integrated occupancy models
+
+Combining multiple datasets into occupancy models have been developed previously by [@nichols2008] in details by estimating occupancy at two the spatial scales. In our integration process, we extended the parametrization of a standard occupancy model detection process to include two different datasets with different detection probabilities. Doing it, we must assume that
+
+-   the two monitoring programs are independent, i.e. detection by program 1 does not affect detection probability of program 2.
+
+Subsequently, integrated repeated-visits occupancy models have the modeling assumption of both RV occupancy and of integrated occupancy. Similarly, using integrated single-visit occupancy models cumulate both the assumptions of SV occupancy and of integrated occupancy.
+
+## Summarize the modeling assumptions in a table
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse)
+library(kableExtra)
+model_ass <- dplyr::tibble("Modeling assumptions" = c('Closure assumption, i.e. site does not change over the survey season', "Latent occupancy process","Detection process", "No unmodeled heterogeneity in detection process", "Detection histories at each site are independent","Proportion of occurence over the total number of sites is > 10%", "Data integration", "Detection process"), 
+                    "RV occupancy" = c("Yes","Occupancy prob. constant across sites, or modeled with covariates","Detection prob. constant across sites, or modeled with covariates", "Yes","Yes","No","Integrated RV occupancy", "Monitoring programs must be independent, or dependency must be accounted"),
+                   "SV occupancy" = c("No","Continuous covariate needed, independant from the covariate used for the detection prob.","Continuous covariate needed, independant from the covariate used for the occupancy prob.", "Yes","Yes","Yes","Integrated SV occupancy", "Monitoring programs must be independent, or dependency must be accounted") )
+model_ass %>%
+  kable() %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
++---------------------------------------------------------------------------+---------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| Modeling assumptions                                                      | RV occupancy                                                              | SV occupancy                                                                                 |
++:=========================================================================:+:=========================================================================:+:============================================================================================:+
+| Closure assumption, i.e. site does not change over the survey season      | Yes                                                                       | No                                                                                           |
++---------------------------------------------------------------------------+---------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| ---                                                                       | ---                                                                       | ---                                                                                          |
++---------------------------------------------------------------------------+---------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| Latent occupancy process                                                  | Occupancy prob. constant across sites, or modeled with covariates         | Continuous covariate needed, **independant from the covariate used for the detection prob.** |
++---------------------------------------------------------------------------+---------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| ---                                                                       | ---                                                                       | ---                                                                                          |
++---------------------------------------------------------------------------+---------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| Detection process                                                         | Detection prob. constant across sites, or modeled with covariates         | Continuous covariate needed, **independant from the covariate used for the occupancy prob.** |
++---------------------------------------------------------------------------+---------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| ---                                                                       | ---                                                                       | ---                                                                                          |
++---------------------------------------------------------------------------+---------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| No unmodeled heterogeneity in detection prob.                             | Yes                                                                       | Yes                                                                                          |
++---------------------------------------------------------------------------+---------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| ---                                                                       | ---                                                                       | ---                                                                                          |
++---------------------------------------------------------------------------+---------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| Detection of species and detection histories at each site are independent | Yes                                                                       | Yes                                                                                          |
++---------------------------------------------------------------------------+---------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| ---                                                                       | ---                                                                       | ---                                                                                          |
++---------------------------------------------------------------------------+---------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| Proportion of occurence over the total number of sites is \> 10%          | No                                                                        | Yes                                                                                          |
++---------------------------------------------------------------------------+---------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| ---                                                                       | ---                                                                       | ---                                                                                          |
++---------------------------------------------------------------------------+---------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| **Data integration**                                                      | **Integrated RV occupancy**                                               | **Integrated SV occupancy**                                                                  |
++---------------------------------------------------------------------------+---------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| Detection process                                                         | Monitoring programs must be independent, or dependency must be accounted. | Monitoring programs must be independent, or dependency must be accounted.                    |
++---------------------------------------------------------------------------+---------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+
+# Literature cited
