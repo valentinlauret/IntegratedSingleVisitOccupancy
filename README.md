@@ -1,5 +1,4 @@
 ![image](https://user-images.githubusercontent.com/34425103/125045315-2595e580-e09d-11eb-9ce9-11657900a361.png)
-https://zenodo.org/badge/doi/10.5281/zenodo.5084385.svg
 
 # Using single-visit into integrated occupancy models to make the most of existing monitoring programs: R codes and data
 
