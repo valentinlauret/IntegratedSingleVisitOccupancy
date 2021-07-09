@@ -1,3 +1,5 @@
+https://zenodo.org/badge/doi/10.5281/zenodo.5084385.svg
+
 # Using single-visit into integrated occupancy models to make the most of existing monitoring programs: R codes and data
 
 This repository contains all codes and data to run the occupancy models present in our [manuscript](https://www.biorxiv.org/content/10.1101/848663v1.abstract). Please contact me if something goes wrong with the code, or for any question.  
